@@ -1,0 +1,3 @@
+package com.example.stateduuz.model.techerStatisticAcademicDegree
+
+class techerStatisticAcademicDegree : ArrayList<techerStatisticAcademicDegreeItem>()

@@ -1,4 +1,4 @@
-package com.example.stateduuz.data
+package com.example.stateduuz.model.universitetall
 
 
 data class StatisticsQabul(
