@@ -2,55 +2,45 @@
   "title": "2021-2024 yillar uchun arizalar statistikasi",
   "categories": [
     {
-      "name": "Bakalavr",
+      "name": "2021-2022",
       "data": [
-        { "year": "2021-2022", "applications": 948211 },
-        { "year": "2022-2023", "applications": 1072118 },
-        { "year": "2023-2024", "applications": 948491 },
-        { "year": "2024-2025", "applications": 894279 }
+        { "type": "Bakalavr", "applications": 948211 },
+        { "type": "Magistratura", "applications": 79108 },
+        { "type": "Akademik litsey", "applications": 35614 },
+        { "type": "Kasb-hunar maktabi", "applications": 103812 },
+        { "type": "Kollej", "applications": 112213 },
+        { "type": "Texnikum", "applications": 161374 }
       ]
     },
     {
-      "name": "Magistratura",
+      "name": "2022-2023",
       "data": [
-        { "year": "2021-2022", "applications": 79108 },
-        { "year": "2022-2023", "applications": 25689 },
-        { "year": "2023-2024", "applications": 20054 },
-        { "year": "2024-2025", "applications": 33172 }
+        { "type": "Bakalavr", "applications": 1072118 },
+        { "type": "Magistratura", "applications": 25689 },
+        { "type": "Akademik litsey", "applications": 31755 },
+        { "type": "Kasb-hunar maktabi", "applications": 105791 },
+        { "type": "Kollej", "applications": 65518 },
+        { "type": "Texnikum", "applications": 144682 }
       ]
     },
     {
-      "name": "Akademik litsey",
+      "name": "2023-2024",
       "data": [
-        { "year": "2021-2022", "applications": 35614 },
-        { "year": "2022-2023", "applications": 31755 },
-        { "year": "2023-2024", "applications": 33884 },
-        { "year": "2024-2025", "applications": 44356 }
+        { "type": "Bakalavr", "applications": 948491 },
+        { "type": "Magistratura", "applications": 20054 },
+        { "type": "Akademik litsey", "applications": 33884 },
+        { "type": "Kasb-hunar maktabi", "applications": 129324 },
+        { "type": "Kollej", "applications": 35088 },
+        { "type": "Texnikum", "applications": 140764 }
       ]
     },
     {
-      "name": "Kasb-hunar maktabi",
+      "name": "2024-2025",
       "data": [
-        { "year": "2021-2022", "applications": 103812 },
-        { "year": "2022-2023", "applications": 105791 },
-        { "year": "2023-2024", "applications": 129324 },
-        { "year": "2024-2025", "applications": 129834 }
-      ]
-    },
-    {
-      "name": "Kollej",
-      "data": [
-        { "year": "2021-2022", "applications": 112213 },
-        { "year": "2022-2023", "applications": 65518 },
-        { "year": "2023-2024", "applications": 35088 }
-      ]
-    },
-    {
-      "name": "Texnikum",
-      "data": [
-        { "year": "2021-2022", "applications": 161374 },
-        { "year": "2022-2023", "applications": 144682 },
-        { "year": "2023-2024", "applications": 140764 }
+        { "type": "Bakalavr", "applications": 894279 },
+        { "type": "Magistratura", "applications": 33172 },
+        { "type": "Akademik litsey", "applications": 44356 },
+        { "type": "Kasb-hunar maktabi", "applications": 129834 }
       ]
     }
   ]

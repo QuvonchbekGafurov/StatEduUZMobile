@@ -1,4 +1,4 @@
-package com.example.stateduuz.model.universitetall
+package com.example.stateduuz.model.universityAll
 
 data class UniversitetAllItem(
     val andijon: Int,

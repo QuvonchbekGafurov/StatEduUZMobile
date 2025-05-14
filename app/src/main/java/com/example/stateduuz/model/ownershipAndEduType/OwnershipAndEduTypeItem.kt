@@ -1,4 +1,4 @@
-package com.example.stateduuz.model
+package com.example.stateduuz.model.ownershipAndEduType
 
 data class ownershipAndEduTypeItem(
     val bachelorCount: Int,

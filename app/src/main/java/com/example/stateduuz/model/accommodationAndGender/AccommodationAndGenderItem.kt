@@ -1,4 +1,4 @@
-package com.example.stateduuz.model
+package com.example.stateduuz.model.accommodationAndGender
 
 data class accommodationAndGenderItem(
     val accommodation: String,

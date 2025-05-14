@@ -1,3 +1,3 @@
-package com.example.stateduuz.model
+package com.example.stateduuz.model.educationFormAndCourse
 
 class educationFormAndCourse : ArrayList<educationFormAndCourseItem>()

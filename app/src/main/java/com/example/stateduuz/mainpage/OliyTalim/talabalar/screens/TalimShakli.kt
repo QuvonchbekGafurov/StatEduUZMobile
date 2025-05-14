@@ -1,4 +1,4 @@
-package com.example.stateduuz.mainpage.OliyTalim.talabalar.sort
+package com.example.stateduuz.mainpage.OliyTalim.talabalar.screens
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -31,18 +33,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.stateduuz.AnimatedCounter
+import com.example.stateduuz.utils.AnimatedCounter
 import com.example.stateduuz.chart.stackedbar.StackedBarGraph
+import com.example.stateduuz.mainpage.OliyTalim.talabalar.viewmodel.ChartUiState
 import com.example.stateduuz.mainpage.OliyTalim.talabalar.viewmodel.EduFormViewModel
-import com.example.stateduuz.mainpage.OliyTalim.talabalar.viewmodel.EduTypeViewModel
-import com.example.stateduuz.model.educationFormAndAccommodation.educationFormAndAccommodationItem
-import com.example.stateduuz.model.educationFormAndCitizenship.educationFormAndCitizenship
 import com.example.stateduuz.ui.theme.ColorDeepPurple
 import com.example.stateduuz.ui.theme.ColorGreen
 import com.example.stateduuz.ui.theme.ColorLightBlue
 import com.example.stateduuz.ui.theme.ColorLightOrange
 import com.example.stateduuz.ui.theme.ColorLightYellow
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TalimShakliScreen(viewModel: EduFormViewModel = hiltViewModel()) {
@@ -51,8 +50,9 @@ fun TalimShakliScreen(viewModel: EduFormViewModel = hiltViewModel()) {
     val educationFormAndPaymentForm by viewModel.educationFormAndPaymentForm.observeAsState()
     val educationFormAndCourse by viewModel.educationFormAndCourse.observeAsState()
     val educationFormAndAccommodation by viewModel.educationFormAndAccommodation.observeAsState()
-    val educationFormAndCitizenship by viewModel.educatiobFormAndCitizenship.observeAsState()
+    val educationFormAndCitizenship by viewModel.educationFormAndCitizenship.observeAsState()
 
+    // Trigger data fetching once
     LaunchedEffect(Unit) {
         viewModel.fetchEducationFormAndGender()
         viewModel.fetchEducationFormAndAge()
@@ -61,562 +61,75 @@ fun TalimShakliScreen(viewModel: EduFormViewModel = hiltViewModel()) {
         viewModel.fetchEducationFormAndAccommodation()
         viewModel.fetchEducationFormAndCitizenship()
     }
+
     Column(
         modifier = Modifier
-            .padding(20.dp)
+            .padding(horizontal = 20.dp)
             .fillMaxSize()
     ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 Column {
                     Spacer(modifier = Modifier.height(20.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .padding(10.dp)
+
+                    // Gender Chart
+                    ChartSection(
+                        title = "Jins bo'yicha",
+                        chartData = educationFormAndGender,
+                        type = false
                     )
-                    {
-                        Text(text = "Jins bo'yicha", fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
-                        Spacer(modifier = Modifier.height(5.dp))
-                        var xAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var allDataLists by remember { mutableStateOf<List<List<Int>>>(emptyList()) }
-                        var yAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var topValue by remember { mutableStateOf<List<Int>>(emptyList()) }
-
-                        LaunchedEffect(educationFormAndGender) {
-                            educationFormAndGender?.let { data ->
-                                xAxisScaleData = data.map { it.eduForm }.distinct()
-                                yAxisScaleData = data.map { it.name }.distinct() // ["1-kurs", "2-kurs", ..., "6-kurs"]
-                                val groupedData = data.groupBy { it.name }
-                                    .mapValues { (_, values) -> values.associateBy { it.eduForm } }
-                                allDataLists = yAxisScaleData.map { course ->
-                                    xAxisScaleData.map { eduType ->
-                                        groupedData[course]?.get(eduType)?.count ?: 0
-                                    }
-                                }
-                                // To'g'ri count olish uchun groupedData ichidan qiymat bo'lmaganlar uchun nol qo'ymaymiz
-                                topValue = yAxisScaleData.map { course ->
-                                    val courseData = groupedData[course]
-                                    if (courseData != null) {
-                                        courseData.values.sumOf { it.count } // Kurs bo'yicha barcha countlarni yig'ish
-                                    } else {
-                                        0
-                                    }
-                                }                            }
-                        }
-                        LazyRow(modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            items(yAxisScaleData.size) {index->
-                                Column(horizontalAlignment = Alignment.Start) {
-                                    Text(
-                                        text = "${yAxisScaleData[index]}",
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(5.dp))
-                                    if (topValue.isNotEmpty()) {
-                                        AnimatedCounter(
-                                            targetNumber = topValue[index] ?: 0,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 25,
-                                            modifier = Modifier
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(20.dp))
-
-
-                            }
-                        }
-                        val colors = listOf(
-                            ColorGreen, ColorLightBlue, ColorLightOrange, ColorDeepPurple, ColorLightYellow,
-                            Color.Red, Color.Red) // Ranglarni o'zgartirish mumkin
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Log.e("TAG", "TalimTuriScreen data: $xAxisScaleData and $allDataLists")
-                        if (xAxisScaleData.isNotEmpty() && allDataLists.isNotEmpty()) {
-
-                            Log.e("TAG", "TalimTuriScreen: kurslar $allDataLists  : $xAxisScaleData  :  ", )
-                            StackedBarGraph(
-                                xAxisScaleData = xAxisScaleData,
-                                allDataLists = allDataLists,
-                                colors = colors,
-                                height = 400.dp,
-                                barWidth = 50.dp,
-                                type = false,
-                                yAxisScaleData = yAxisScaleData
-                            )
-                        }
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            LegendItem(color = colors[1], label = "To'lov kontrakti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                            LegendItem(color = colors[0], label = "Davlat granti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                        }
-                    }
                     Spacer(modifier = Modifier.height(20.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .padding(10.dp)
+
+                    // Age Chart
+                    ChartSection(
+                        title = "Yoshi",
+                        chartData = educationFormAndAge,
+                        type = false
                     )
-                    {
-                        Text(text = "Yoshi", fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
-                        Spacer(modifier = Modifier.height(5.dp))
-                        var xAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var allDataLists by remember { mutableStateOf<List<List<Int>>>(emptyList()) }
-                        var yAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var topValue by remember { mutableStateOf<List<Int>>(emptyList()) }
-
-                        LaunchedEffect(educationFormAndAge) {
-                            educationFormAndAge?.let { data ->
-                                xAxisScaleData = data.map { it.eduForm }.distinct()
-                                yAxisScaleData = data.map { it.name }.distinct() // ["1-kurs", "2-kurs", ..., "6-kurs"]
-                                val groupedData = data.groupBy { it.name }
-                                    .mapValues { (_, values) -> values.associateBy { it.eduForm } }
-                                allDataLists = yAxisScaleData.map { course ->
-                                    xAxisScaleData.map { eduType ->
-                                        groupedData[course]?.get(eduType)?.count ?: 0
-                                    }
-                                }
-                                // To'g'ri count olish uchun groupedData ichidan qiymat bo'lmaganlar uchun nol qo'ymaymiz
-                                topValue = yAxisScaleData.map { course ->
-                                    val courseData = groupedData[course]
-                                    if (courseData != null) {
-                                        courseData.values.sumOf { it.count } // Kurs bo'yicha barcha countlarni yig'ish
-                                    } else {
-                                        0
-                                    }
-                                }                            }
-                        }
-                        LazyRow(modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            items(yAxisScaleData.size) {index->
-                                Column(horizontalAlignment = Alignment.Start) {
-                                    val list= listOf("30 yoshdan katta","30 yoshdan kichik","30 yoshdan katta","30 yoshdan kichik","30 yoshdan katta","30 yoshdan kichik")
-                                    Text(
-                                        text = "${list[index]}",
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(5.dp))
-                                    if (topValue.isNotEmpty()) {
-                                        AnimatedCounter(
-                                            targetNumber = topValue[index] ?: 0,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 25,
-                                            modifier = Modifier
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(20.dp))
-
-
-                            }
-                        }
-                        val colors = listOf(
-                            ColorGreen, ColorLightBlue, ColorLightOrange, ColorDeepPurple, ColorLightYellow,
-                            Color.Red, Color.Red) // Ranglarni o'zgartirish mumkin
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Log.e("TAG", "TalimTuriScreen data: $xAxisScaleData and $allDataLists")
-                        if (xAxisScaleData.isNotEmpty() && allDataLists.isNotEmpty()) {
-
-                            Log.e("TAG", "TalimTuriScreen: kurslar $allDataLists  : $xAxisScaleData  :  ", )
-                            StackedBarGraph(
-                                xAxisScaleData = xAxisScaleData,
-                                allDataLists = allDataLists,
-                                colors = colors,
-                                height = 400.dp,
-                                barWidth = 50.dp,
-                                type = false,
-                                yAxisScaleData = yAxisScaleData
-                            )
-                        }
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            LegendItem(color = colors[1], label = "To'lov kontrakti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                            LegendItem(color = colors[0], label = "Davlat granti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                        }
-                    }
                     Spacer(modifier = Modifier.height(20.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .padding(10.dp)
+
+                    // Citizenship Chart
+                    ChartSection(
+                        title = "Fuqaroligi",
+                        chartData = educationFormAndCitizenship,
+                        type = true
                     )
-                    {
-                        Text(text = "Fuqaroligi", fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
-                        Spacer(modifier = Modifier.height(5.dp))
-                        var xAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var allDataLists by remember { mutableStateOf<List<List<Int>>>(emptyList()) }
-                        var yAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var topValue by remember { mutableStateOf<List<Int>>(emptyList()) }
-
-                        LaunchedEffect(educationFormAndCitizenship) {
-                            educationFormAndCitizenship?.let { data ->
-                                xAxisScaleData = data.map { it.eduForm }.distinct()
-                                yAxisScaleData = data.map { it.name }.distinct() // ["1-kurs", "2-kurs", ..., "6-kurs"]
-                                val groupedData = data.groupBy { it.name }
-                                    .mapValues { (_, values) -> values.associateBy { it.eduForm } }
-                                allDataLists = yAxisScaleData.map { course ->
-                                    xAxisScaleData.map { eduType ->
-                                        groupedData[course]?.get(eduType)?.count ?: 0
-                                    }
-                                }
-                                // To'g'ri count olish uchun groupedData ichidan qiymat bo'lmaganlar uchun nol qo'ymaymiz
-                                topValue = yAxisScaleData.map { course ->
-                                    val courseData = groupedData[course]
-                                    if (courseData != null) {
-                                        courseData.values.sumOf { it.count } // Kurs bo'yicha barcha countlarni yig'ish
-                                    } else {
-                                        0
-                                    }
-                                }                            }
-                        }
-                        LazyRow(modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            items(yAxisScaleData.size) {index->
-                                Column(horizontalAlignment = Alignment.Start) {
-                                    Text(
-                                        text = "${yAxisScaleData[index]}",
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(5.dp))
-                                    if (topValue.isNotEmpty()) {
-                                        AnimatedCounter(
-                                            targetNumber = topValue[index] ?: 0,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 25,
-                                            modifier = Modifier
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(20.dp))
-
-
-                            }
-                        }
-                        val colors = listOf(
-                            ColorGreen, ColorLightBlue, ColorLightOrange, ColorDeepPurple, ColorLightYellow,
-                            Color.Red, Color.Red) // Ranglarni o'zgartirish mumkin
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Log.e("TAG", "TalimTuriScreen data: $xAxisScaleData and $allDataLists")
-                        if (xAxisScaleData.isNotEmpty() && allDataLists.isNotEmpty()) {
-
-                            Log.e("TAG", "TalimTuriScreen: kurslar $allDataLists  : $xAxisScaleData  :  ", )
-                            StackedBarGraph(
-                                xAxisScaleData = xAxisScaleData,
-                                allDataLists = allDataLists,
-                                colors = colors,
-                                height = 400.dp,
-                                barWidth = 50.dp,
-                                type = true,
-                                yAxisScaleData = yAxisScaleData
-                            )
-                        }
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            LegendItem(color = colors[1], label = "To'lov kontrakti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                            LegendItem(color = colors[0], label = "Davlat granti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                        }
-                    }
                     Spacer(modifier = Modifier.height(20.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .padding(10.dp)
+
+                    // Payment Form Chart
+                    ChartSection(
+                        title = "To'lov Shakli",
+                        chartData = educationFormAndPaymentForm,
+                        type = true
                     )
-                    {
-                        Text(text = "To'lov Shakli", fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
-                        Spacer(modifier = Modifier.height(5.dp))
-                        var xAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var allDataLists by remember { mutableStateOf<List<List<Int>>>(emptyList()) }
-                        var yAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var topValue by remember { mutableStateOf<List<Int>>(emptyList()) }
-
-                        LaunchedEffect(educationFormAndPaymentForm) {
-                            educationFormAndPaymentForm?.let { data ->
-                                xAxisScaleData = data.map { it.eduForm }.distinct()
-                                yAxisScaleData = data.map { it.name }.distinct() // ["1-kurs", "2-kurs", ..., "6-kurs"]
-                                val groupedData = data.groupBy { it.name }
-                                    .mapValues { (_, values) -> values.associateBy { it.eduForm } }
-                                allDataLists = yAxisScaleData.map { course ->
-                                    xAxisScaleData.map { eduType ->
-                                        groupedData[course]?.get(eduType)?.count ?: 0
-                                    }
-                                }
-                                // To'g'ri count olish uchun groupedData ichidan qiymat bo'lmaganlar uchun nol qo'ymaymiz
-                                topValue = yAxisScaleData.map { course ->
-                                    val courseData = groupedData[course]
-                                    if (courseData != null) {
-                                        courseData.values.sumOf { it.count } // Kurs bo'yicha barcha countlarni yig'ish
-                                    } else {
-                                        0
-                                    }
-                                }                            }
-                        }
-                        LazyRow(modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            items(yAxisScaleData.size) {index->
-                                Column(horizontalAlignment = Alignment.Start) {
-                                    Text(
-                                        text = "${yAxisScaleData[index]}",
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(5.dp))
-                                    if (topValue.isNotEmpty()) {
-                                        AnimatedCounter(
-                                            targetNumber = topValue[index] ?: 0,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 25,
-                                            modifier = Modifier
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(20.dp))
-
-
-                            }
-                        }
-                        val colors = listOf(
-                            ColorGreen, ColorLightBlue, ColorLightOrange, ColorDeepPurple, ColorLightYellow,
-                            Color.Red, Color.Red) // Ranglarni o'zgartirish mumkin
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Log.e("TAG", "TalimTuriScreen data: $xAxisScaleData and $allDataLists")
-                        if (xAxisScaleData.isNotEmpty() && allDataLists.isNotEmpty()) {
-
-                            Log.e("TAG", "TalimTuriScreen: kurslar $allDataLists  : $xAxisScaleData  :  ", )
-                            StackedBarGraph(
-                                xAxisScaleData = xAxisScaleData,
-                                allDataLists = allDataLists,
-                                colors = colors,
-                                height = 400.dp,
-                                barWidth = 50.dp,
-                                type = true,
-                                yAxisScaleData = yAxisScaleData
-                            )
-                        }
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            LegendItem(color = colors[1], label = "To'lov kontrakti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                            LegendItem(color = colors[0], label = "Davlat granti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                        }
-                    }
                     Spacer(modifier = Modifier.height(20.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .padding(10.dp)
+
+                    // Course Chart
+                    ChartSection(
+                        title = "Kurslar",
+                        chartData = educationFormAndCourse,
+                        type = true
                     )
-                    {
-                        Text(text = "Kurslar", fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
-                        Spacer(modifier = Modifier.height(5.dp))
-                        var xAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var allDataLists by remember { mutableStateOf<List<List<Int>>>(emptyList()) }
-                        var yAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var topValue by remember { mutableStateOf<List<Int>>(emptyList()) }
-
-                        LaunchedEffect(educationFormAndCourse) {
-                            educationFormAndCourse?.let { data ->
-                                xAxisScaleData = data.map { it.eduForm }.distinct()
-                                yAxisScaleData = data.map { it.name }.distinct() // ["1-kurs", "2-kurs", ..., "6-kurs"]
-                                val groupedData = data.groupBy { it.name }
-                                    .mapValues { (_, values) -> values.associateBy { it.eduForm } }
-                                allDataLists = yAxisScaleData.map { course ->
-                                    xAxisScaleData.map { eduType ->
-                                        groupedData[course]?.get(eduType)?.count ?: 0
-                                    }
-                                }
-                                // To'g'ri count olish uchun groupedData ichidan qiymat bo'lmaganlar uchun nol qo'ymaymiz
-                                topValue = yAxisScaleData.map { course ->
-                                    val courseData = groupedData[course]
-                                    if (courseData != null) {
-                                        courseData.values.sumOf { it.count } // Kurs bo'yicha barcha countlarni yig'ish
-                                    } else {
-                                        0
-                                    }
-                                }                            }
-                        }
-                        LazyRow(modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            items(yAxisScaleData.size) {index->
-                                Column(horizontalAlignment = Alignment.Start) {
-                                    Text(
-                                        text = "${yAxisScaleData[index]}",
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(5.dp))
-                                    if (topValue.isNotEmpty()) {
-                                        AnimatedCounter(
-                                            targetNumber = topValue[index] ?: 0,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 25,
-                                            modifier = Modifier
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(20.dp))
-
-
-                            }
-                        }
-                        val colors = listOf(
-                            ColorGreen, ColorLightBlue, ColorLightOrange, ColorDeepPurple, ColorLightYellow,
-                            Color.Red, Color.Red) // Ranglarni o'zgartirish mumkin
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Log.e("TAG", "TalimTuriScreen data: $xAxisScaleData and $allDataLists")
-                        if (xAxisScaleData.isNotEmpty() && allDataLists.isNotEmpty()) {
-
-                            Log.e("TAG", "TalimTuriScreen: kurslar $allDataLists  : $xAxisScaleData  :  ", )
-                            StackedBarGraph(
-                                xAxisScaleData = xAxisScaleData,
-                                allDataLists = allDataLists,
-                                colors = colors,
-                                height = 400.dp,
-                                barWidth = 50.dp,
-                                type = true,
-                                yAxisScaleData = yAxisScaleData
-                            )
-                        }
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            LegendItem(color = colors[1], label = "To'lov kontrakti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                            LegendItem(color = colors[0], label = "Davlat granti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                        }
-                    }
                     Spacer(modifier = Modifier.height(20.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .padding(10.dp)
+
+                    // Accommodation Chart
+                    ChartSection(
+                        title = "Yashash joyi",
+                        chartData = educationFormAndAccommodation,
+                        type = true
                     )
-                    {
-                        Text(text = "Yashash joyi", fontWeight = FontWeight.Bold, fontSize = 20.sp)
 
-                        Spacer(modifier = Modifier.height(5.dp))
-                        var xAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var allDataLists by remember { mutableStateOf<List<List<Int>>>(emptyList()) }
-                        var yAxisScaleData by remember { mutableStateOf<List<String>>(emptyList()) }
-                        var topValue by remember { mutableStateOf<List<Int>>(emptyList()) }
-
-                        LaunchedEffect(educationFormAndAccommodation) {
-                            educationFormAndAccommodation?.let { data ->
-                                xAxisScaleData = data.map { it.eduForm }.distinct()
-                                yAxisScaleData = data.map { it.name }.distinct() // ["1-kurs", "2-kurs", ..., "6-kurs"]
-                                val groupedData = data.groupBy { it.name }
-                                    .mapValues { (_, values) -> values.associateBy { it.eduForm } }
-                                allDataLists = yAxisScaleData.map { course ->
-                                    xAxisScaleData.map { eduType ->
-                                        groupedData[course]?.get(eduType)?.count ?: 0
-                                    }
-                                }
-                                // To'g'ri count olish uchun groupedData ichidan qiymat bo'lmaganlar uchun nol qo'ymaymiz
-                                topValue = yAxisScaleData.map { course ->
-                                    val courseData = groupedData[course]
-                                    if (courseData != null) {
-                                        courseData.values.sumOf { it.count } // Kurs bo'yicha barcha countlarni yig'ish
-                                    } else {
-                                        0
-                                    }
-                                }                            }
-                        }
-                        LazyRow(modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            items(yAxisScaleData.size) {index->
-                                Column(horizontalAlignment = Alignment.Start) {
-                                    Text(
-                                        text = "${yAxisScaleData[index]}",
-                                        color = Color.LightGray,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(5.dp))
-                                    if (topValue.isNotEmpty()) {
-                                        AnimatedCounter(
-                                            targetNumber = topValue[index] ?: 0,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 25,
-                                            modifier = Modifier
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.width(20.dp))
-
-
-                            }
-                        }
-                        val colors = listOf(
-                            ColorGreen, ColorLightBlue, ColorLightOrange, ColorDeepPurple, ColorLightYellow,
-                            Color.Red, Color.Red) // Ranglarni o'zgartirish mumkin
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Log.e("TAG", "TalimTuriScreen data: $xAxisScaleData and $allDataLists")
-                        if (xAxisScaleData.isNotEmpty() && allDataLists.isNotEmpty()) {
-
-                            Log.e("TAG", "TalimTuriScreen: kurslar $allDataLists  : $xAxisScaleData  :  ", )
-                            StackedBarGraph(
-                                xAxisScaleData = xAxisScaleData,
-                                allDataLists = allDataLists,
-                                colors = colors,
-                                height = 400.dp,
-                                barWidth = 50.dp,
-                                type = true,
-                                yAxisScaleData = yAxisScaleData
-                            )
-                        }
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            LegendItem(color = colors[1], label = "To'lov kontrakti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                            LegendItem(color = colors[0], label = "Davlat granti")
-                            Spacer(modifier = Modifier.width(20.dp))
-                        }
-                    }
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
-
-                }
+            }
         }
     }
 }

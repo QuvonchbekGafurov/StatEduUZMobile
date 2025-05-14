@@ -1,4 +1,4 @@
-package com.example.stateduuz.model
+package com.example.stateduuz.model.ownership
 
 data class ownershipItem(
     val count: Int,

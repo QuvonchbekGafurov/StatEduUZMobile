@@ -1,4 +1,4 @@
-package com.example.stateduuz.model.regionAndEduType 
+package com.example.stateduuz.model.regionAndEduTpe
 
 data class regionAndEduTypeItem(
     val count: Int,

@@ -1,17 +1,17 @@
-package com.example.stateduuz.model.universitetall
-
+package com.example.stateduuz.model.qabul
 
 data class StatisticsQabul(
     val title: String,
-    val categories: List<Category>
+    val categories: List<YearCategory>
 )
 
-data class Category(
-    val name: String,
-    val data: List<ApplicationData>
+data class YearCategory(
+    val name: String, // Yil (Masalan: "2021-2022")
+    val data: List<TypeData>
 )
 
-data class ApplicationData(
-    val year: String,
+data class TypeData(
+    val type: String, // O‘quv turi (Masalan: "Bakalavr")
     val applications: Int
 )
+
